@@ -1,21 +1,42 @@
 // create web server 
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
-var path = require('path');
-
-// create server
-http.createServer(function (req, res) {
-    var q = url.parse(req.url, true);
-    var filename = "." + q.pathname;
-    fs.readFile(filename, function(err, data) {
-        if (err) {
-            res.writeHead(404, {'Content-Type': 'text/html'});
-            return res.end("404 Not Found");
-        }  
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        res.write(data);
-        return res.end();
-    });
-}).listen(8080);
-//console.log('Server running at http://
+// load express module
+const express = require('express');
+// create web server
+const app = express();
+// load body-parser module
+const bodyParser = require('body-parser');
+// load comments module
+const comments = require('./comments');
+// load cors module
+const cors = require('cors');
+// use cors
+app.use(cors());
+// use body-parser
+app.use(bodyParser.json());
+// get all comments
+app.get('/comments', (req, res) => {
+    res.json(comments.getComments());
+});
+// add a new comment
+app.post('/comments', (req, res) => {
+    const comment = req.body;
+    comments.addComment(comment);
+    res.json(comment);
+});
+// delete a comment
+app.delete('/comments/:id', (req, res) => {
+    const id = req.params.id;
+    comments.deleteComment(id);
+    res.json(id);
+});
+// update a comment
+app.put('/comments/:id', (req, res) => {
+    const id = req.params.id;
+    const comment = req.body;
+    comments.updateComment(id, comment);
+    res.json(comment);
+});
+// start web server
+app.listen(3000, () => {
+    console.log('Web server is up and running');
+});
